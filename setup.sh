@@ -8,17 +8,33 @@ REPO_PATH="${2:-.}"
 mkdir -p "$REPO_PATH/src/extensions"
 TMPDIR=$(mktemp -d)
 
-# Create types.json
-echo '{
-"resources": {
-    "Trigger": {
-    "type": "object",
+# Create proper bicep types.json format (array of type definitions)
+cat > "$TMPDIR/types.json" << 'TYPES'
+[
+{
+    "$type": "StringType"
+},
+{
+    "$type": "ObjectType",
+    "name": "TriggerProperties",
     "properties": {
-        "name": { "type": "string" }
+    "name": {
+        "type": {"$ref": "#/0"},
+        "flags": 1,
+        "description": "The trigger name"
     }
     }
+},
+{
+    "$type": "ResourceType",
+    "name": "exfil:Trigger@v1",
+    "scopeType": 0,
+    "readOnlyScopes": 0,
+    "body": {"$ref": "#/1"},
+    "flags": 0
 }
-}' > "$TMPDIR/types.json"
+]
+TYPES
 
 # Create types.tgz
 tar -C "$TMPDIR" -czvf "$TMPDIR/types.tgz" types.json
@@ -38,7 +54,7 @@ chmod +x "$TMPDIR/extension"
 # Create the final extension archive
 tar -C "$TMPDIR" -czvf "$REPO_PATH/src/extensions/exfil.tar.gz" types.tgz extension
 
-# Create bicepconfig.json
+# Create bicepconfig.json in src/
 echo '{
 "experimentalFeaturesEnabled": {
     "extensibility": true
