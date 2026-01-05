@@ -48,42 +48,42 @@ GOCODE
 # Build static binary for Linux
 CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o extension-linux-x64 .
 
-# Create index.json with proper bicep types format
+# Create index.json with proper bicep types format (lowercase properties)
 cat > index.json << 'INDEX'
 {
-  "Settings": {
-    "Name": "exfil",
-    "Version": "1.0.0",
-    "IsSingleton": true
+  "settings": {
+    "name": "exfil",
+    "version": "1.0.0",
+    "isSingleton": true
   },
-  "Types": [
+  "types": [
     {
       "$type": "StringType"
     },
     {
       "$type": "ObjectType",
-      "Name": "Trigger",
-      "Properties": {
+      "name": "Trigger",
+      "properties": {
         "name": {
-          "Type": {
+          "type": {
             "$ref": "#/0"
           },
-          "Flags": 1,
-          "Description": "Resource name"
+          "flags": 1,
+          "description": "Resource name"
         }
       }
     },
     {
       "$type": "ResourceType",
-      "Name": "Trigger@v1",
-      "ScopeType": 0,
-      "Body": {
+      "name": "Trigger@v1",
+      "scopeType": 0,
+      "body": {
         "$ref": "#/1"
       },
-      "Flags": 0
+      "flags": 0
     }
   ],
-  "ResourceFunctions": {}
+  "resourceFunctions": {}
 }
 INDEX
 
