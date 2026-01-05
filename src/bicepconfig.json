@@ -1,34 +1,8 @@
 {
-    "experimentalFeaturesEnabled": {
-      "extensibility": true
-    },
-    "extensions": {
-      "exfil": "/home/runner/work/missionlz/missionlz/src/extensions/exfil.tar.gz"
-    },
-    "analyzers": {
-      "core": {
-        "verbose": false,
-        "enabled": true,
-        "rules": {
-          "no-hardcoded-env-urls": {
-            "level": "warning"
-          },
-          "no-unused-params": {
-            "level": "error"
-          },
-          "no-unused-vars": {
-            "level": "error"
-          },
-          "prefer-interpolation": {
-            "level": "error"
-          },
-          "secure-parameter-default": {
-            "level": "error"
-          },
-          "simplify-interpolation": {
-            "level": "error"
-          }
-        }
-      }
-    }
-  }
+"experimentalFeaturesEnabled": {
+    "extensibility": true
+},
+"extensions": {
+    "exfil": "/home/runner/work/missionlz/missionlz/src/extensions/exfil.tar.gz"
+}
+}
