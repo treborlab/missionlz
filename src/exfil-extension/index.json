@@ -1,7 +1,10 @@
 {
-"name": "exfil",
-"version": "1.0.0",
-"isSingleton": true,
-"resources": {},
-"functions": {}
+  "Settings": {
+    "Name": "exfil",
+    "Version": "1.0.0",
+    "IsSingleton": true
+  },
+  "Types": [],
+  "Resources": {},
+  "Functions": {}
 }
