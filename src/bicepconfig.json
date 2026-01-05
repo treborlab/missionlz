@@ -4,6 +4,6 @@
     "localDeploy": true
   },
   "extensions": {
-    "HelloWorld": "./extensions/helloworld.tgz"
+    "HelloWorld": "./extensions/helloworld"
   }
 }

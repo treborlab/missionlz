@@ -18,6 +18,18 @@ mkdir -p "$BUILDDIR"
 mkdir -p "$REPO_PATH/src/extensions"
 cd "$BUILDDIR"
 
+# Install standalone Bicep CLI (publish-extension is not in az bicep)
+echo "[*] Installing Bicep CLI..."
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS
+    curl -Lo bicep https://github.com/Azure/bicep/releases/latest/download/bicep-osx-x64
+else
+    # Linux
+    curl -Lo bicep https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64
+fi
+chmod +x bicep
+./bicep --version
+
 echo "[*] Creating .NET extension project..."
 dotnet new web -n "${EXTENSION_NAME}Extension"
 cd "${EXTENSION_NAME}Extension"
@@ -86,25 +98,20 @@ public class GreetingHandler : TypedResourceHandler<Greeting, GreetingIdentifier
 }
 CSHARP
 
-echo "[*] Building for linux-x64..."
-dotnet publish -c Release -r linux-x64 --self-contained -p:PublishSingleFile=true -o ./publish
+echo "[*] Building for linux-x64 (for GitHub Actions)..."
+dotnet publish -c Release -r linux-x64 --self-contained -p:PublishSingleFile=true -o ./publish/linux-x64
 
-echo "[*] Packaging extension..."
-EXTENSION_BINARY="./publish/${EXTENSION_NAME}Extension"
-if [ -f "$EXTENSION_BINARY" ]; then
-    # Try bicep publish-extension first
-    bicep publish-extension "$EXTENSION_BINARY" \
-        --target "$REPO_PATH/src/extensions/helloworld.tgz" \
-        --force 2>/dev/null || {
-        echo "[*] bicep publish-extension not available, creating manual archive..."
-        cd publish
-        tar -czvf "$REPO_PATH/src/extensions/helloworld.tgz" "${EXTENSION_NAME}Extension"
-        cd ..
-    }
-else
-    echo "[!] Binary not found at $EXTENSION_BINARY"
-    exit 1
-fi
+# Build for osx-x64 (bicep CLI runs as x64 via Rosetta, needs this to extract types)
+echo "[*] Building for osx-x64 (for type extraction)..."
+dotnet publish -c Release -r osx-x64 --self-contained -p:PublishSingleFile=true -o ./publish/osx-x64
+
+echo "[*] Packaging extension with bicep publish-extension..."
+# Use standalone bicep CLI for publish-extension (not az bicep)
+"$BUILDDIR/bicep" publish-extension \
+    --bin-linux-x64 "./publish/linux-x64/${EXTENSION_NAME}Extension" \
+    --bin-osx-x64 "./publish/osx-x64/${EXTENSION_NAME}Extension" \
+    --target "$REPO_PATH/src/extensions/helloworld" \
+    --force
 
 echo "[*] Creating bicepconfig.json..."
 cat > "$REPO_PATH/src/bicepconfig.json" << 'CONFIG'
@@ -114,7 +121,7 @@ cat > "$REPO_PATH/src/bicepconfig.json" << 'CONFIG'
     "localDeploy": true
   },
   "extensions": {
-    "HelloWorld": "./extensions/helloworld.tgz"
+    "HelloWorld": "./extensions/helloworld"
   }
 }
 CONFIG
@@ -136,7 +143,7 @@ rm -rf "$BUILDDIR"
 
 echo ""
 echo "[+] Done! Files created:"
-echo "    - $REPO_PATH/src/extensions/helloworld.tgz"
+echo "    - $REPO_PATH/src/extensions/helloworld/"
 echo "    - $REPO_PATH/src/bicepconfig.json"
 echo "    - $REPO_PATH/src/mlz.bicep"
 echo ""
