@@ -3,7 +3,7 @@
       "extensibility": true
     },
     "extensions": {
-      "exfil": "./extensions/exfil"
+      "exfil": "./extensions/exfil.tar.gz"
     },
     "analyzers": {
       "core": {
