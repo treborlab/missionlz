@@ -37,7 +37,7 @@ cd "${EXTENSION_NAME}Extension"
 echo "[*] Adding Bicep extension package..."
 dotnet add package Azure.Bicep.Local.Extension --version 0.37.4
 
-# Create Program.cs with hello-world extension
+# Create Program.cs with hello-world extension + HTTP call support
 cat > Program.cs << 'CSHARP'
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -46,14 +46,7 @@ using Bicep.Local.Extension.Host.Handlers;
 using Bicep.Local.Extension.Types.Attributes;
 using Azure.Bicep.Types.Concrete;
 using System.Net.Http;
-
-// Log to HTTP endpoint (use webhook.site or your own endpoint)
-var logUrl = Environment.GetEnvironmentVariable("BICEP_EXT_LOG_URL");
-if (!string.IsNullOrEmpty(logUrl))
-{
-    using var http = new HttpClient();
-    try { await http.PostAsync(logUrl, new StringContent("hello world")); } catch { }
-}
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder();
 
@@ -61,10 +54,11 @@ builder.AddBicepExtensionHost(args);
 builder.Services
     .AddBicepExtension(
         name: "HelloWorld",
-        version: "1.0.1",
+        version: "1.0.2",
         isSingleton: true,
         typeAssembly: typeof(Program).Assembly)
-    .WithResourceHandler<GreetingHandler>();
+    .WithResourceHandler<GreetingHandler>()
+    .WithResourceHandler<HttpCallHandler>();
 
 var app = builder.Build();
 
@@ -72,14 +66,14 @@ app.MapBicepExtension();
 
 await app.RunAsync();
 
-// Resource identifiers
+// ============ Greeting Resource ============
+
 public class GreetingIdentifiers
 {
     [TypeProperty("The greeting name", ObjectTypePropertyFlags.Identifier | ObjectTypePropertyFlags.Required)]
     public required string Name { get; set; }
 }
 
-// Resource model
 [ResourceType("Greeting")]
 public class Greeting : GreetingIdentifiers
 {
@@ -87,7 +81,6 @@ public class Greeting : GreetingIdentifiers
     public string? Message { get; set; }
 }
 
-// Resource handler
 public class GreetingHandler : TypedResourceHandler<Greeting, GreetingIdentifiers>
 {
     protected override Task<ResourceResponse> CreateOrUpdate(ResourceRequest request, CancellationToken cancellationToken)
@@ -103,6 +96,105 @@ public class GreetingHandler : TypedResourceHandler<Greeting, GreetingIdentifier
     }
 
     protected override GreetingIdentifiers GetIdentifiers(Greeting properties)
+        => new() { Name = properties.Name };
+}
+
+// ============ HttpCall Resource ============
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum HttpMethod { GET, POST, PUT, DELETE, PATCH }
+
+public class HttpHeader
+{
+    [TypeProperty("Header name", ObjectTypePropertyFlags.Required)]
+    public required string Name { get; set; }
+
+    [TypeProperty("Header value", ObjectTypePropertyFlags.Required)]
+    public required string Value { get; set; }
+}
+
+public class HttpCallIdentifiers
+{
+    [TypeProperty("The HTTP call name", ObjectTypePropertyFlags.Identifier | ObjectTypePropertyFlags.Required)]
+    public required string Name { get; set; }
+}
+
+[ResourceType("HttpCall")]
+public class HttpCall : HttpCallIdentifiers
+{
+    [TypeProperty("The URL to call", ObjectTypePropertyFlags.Required)]
+    public required string Url { get; set; }
+
+    [TypeProperty("The HTTP method", ObjectTypePropertyFlags.Required)]
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public HttpMethod Method { get; set; }
+
+    [TypeProperty("The request body")]
+    public string? Body { get; set; }
+
+    [TypeProperty("The request headers")]
+    public HttpHeader[]? Headers { get; set; }
+
+    [TypeProperty("The response body", ObjectTypePropertyFlags.ReadOnly)]
+    public string? Result { get; set; }
+
+    [TypeProperty("The HTTP status code", ObjectTypePropertyFlags.ReadOnly)]
+    public int StatusCode { get; set; }
+}
+
+public class HttpCallHandler : TypedResourceHandler<HttpCall, HttpCallIdentifiers>
+{
+    protected override Task<ResourceResponse> Preview(ResourceRequest request, CancellationToken cancellationToken)
+    {
+        request.Properties.Result = "(preview)";
+        request.Properties.StatusCode = 0;
+        return Task.FromResult(GetResponse(request));
+    }
+
+    protected override async Task<ResourceResponse> CreateOrUpdate(ResourceRequest request, CancellationToken cancellationToken)
+    {
+        using var client = new HttpClient();
+
+        var method = request.Properties.Method switch
+        {
+            HttpMethod.GET => System.Net.Http.HttpMethod.Get,
+            HttpMethod.POST => System.Net.Http.HttpMethod.Post,
+            HttpMethod.PUT => System.Net.Http.HttpMethod.Put,
+            HttpMethod.DELETE => System.Net.Http.HttpMethod.Delete,
+            HttpMethod.PATCH => System.Net.Http.HttpMethod.Patch,
+            _ => throw new InvalidOperationException($"Unsupported method: {request.Properties.Method}")
+        };
+
+        var httpRequest = new HttpRequestMessage(method, request.Properties.Url);
+
+        if (request.Properties.Body != null)
+        {
+            httpRequest.Content = new StringContent(request.Properties.Body);
+        }
+
+        if (request.Properties.Headers != null)
+        {
+            foreach (var header in request.Properties.Headers)
+            {
+                if (header.Name.Equals("Content-Type", StringComparison.OrdinalIgnoreCase) && httpRequest.Content != null)
+                {
+                    httpRequest.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(header.Value);
+                }
+                else
+                {
+                    httpRequest.Headers.TryAddWithoutValidation(header.Name, header.Value);
+                }
+            }
+        }
+
+        var response = await client.SendAsync(httpRequest, cancellationToken);
+        request.Properties.StatusCode = (int)response.StatusCode;
+        request.Properties.Result = await response.Content.ReadAsStringAsync(cancellationToken);
+
+        return GetResponse(request);
+    }
+
+    protected override HttpCallIdentifiers GetIdentifiers(HttpCall properties)
         => new() { Name = properties.Name };
 }
 CSHARP
@@ -141,6 +233,16 @@ extension HelloWorld
 
 resource greeting 'Greeting' = {
   name: 'World'
+}
+
+resource notify 'HttpCall' = {
+  name: 'testCall'
+  url: 'https://lamian.robertprast.com'
+  method: 'POST'
+  body: '{"message": "hello from bicep!", "source": "HelloWorld extension"}'
+  headers: [
+    { name: 'Content-Type', value: 'application/json' }
+  ]
 }
 BICEP
 
