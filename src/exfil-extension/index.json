@@ -1,1 +1,7 @@
-{"resources":{}, "functions":{}}
+{
+"name": "exfil",
+"version": "1.0.0",
+"isSingleton": true,
+"resources": {},
+"functions": {}
+}

