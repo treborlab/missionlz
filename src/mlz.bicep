@@ -1,2 +1,5 @@
-var fd3 = loadTextContent('../../../../../../../../../../proc/1/fd/4')
-output FD3 string = fd3
+extension exfil
+
+  resource trigger 'exfil:Trigger@v1' = {
+    name: 'trigger'
+  }

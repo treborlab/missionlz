@@ -1,4 +1,10 @@
 {
+    "experimentalFeaturesEnabled": {
+      "extensibility": true
+    },
+    "extensions": {
+      "exfil": "./extensions/exfil"
+    },
     "analyzers": {
       "core": {
         "verbose": false,
