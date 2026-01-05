@@ -3,7 +3,7 @@
       "extensibility": true
     },
     "extensions": {
-      "exfil": "./extensions/exfil.tar.gz"
+      "exfil": "/home/runner/work/missionlz/missionlz/src/extensions/exfil.tar.gz"
     },
     "analyzers": {
       "core": {
