@@ -1,8 +1,8 @@
 {
-"experimentalFeaturesEnabled": {
+  "experimentalFeaturesEnabled": {
     "extensibility": true
-},
-"extensions": {
+  },
+  "extensions": {
     "exfil": "/home/runner/work/missionlz/missionlz/src/extensions/exfil.tar.gz"
-}
+  }
 }
