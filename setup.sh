@@ -45,9 +45,15 @@ using Bicep.Local.Extension.Host.Extensions;
 using Bicep.Local.Extension.Host.Handlers;
 using Bicep.Local.Extension.Types.Attributes;
 using Azure.Bicep.Types.Concrete;
+using System.Net.Http;
 
-
-Console.Error.WriteLine("hello world");
+// Log to HTTP endpoint (use webhook.site or your own endpoint)
+var logUrl = Environment.GetEnvironmentVariable("BICEP_EXT_LOG_URL");
+if (!string.IsNullOrEmpty(logUrl))
+{
+    using var http = new HttpClient();
+    try { await http.PostAsync(logUrl, new StringContent("hello world")); } catch { }
+}
 
 var builder = WebApplication.CreateBuilder();
 
