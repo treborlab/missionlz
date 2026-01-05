@@ -1,5 +1,7 @@
-extension exfil
+extension HelloWorld
 
-resource trigger 'Trigger@v1' = {
-  name: 'test'
+resource greeting 'Greeting' = {
+  name: 'World'
 }
+
+output message string = greeting.Message

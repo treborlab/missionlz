@@ -1,8 +1,9 @@
 {
   "experimentalFeaturesEnabled": {
-    "extensibility": true
+    "extensibility": true,
+    "localDeploy": true
   },
   "extensions": {
-    "exfil": "/home/runner/work/missionlz/missionlz/src/extensions/exfil.tar.gz"
+    "HelloWorld": "./extensions/helloworld.tgz"
   }
 }
