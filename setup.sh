@@ -46,7 +46,6 @@ using Bicep.Local.Extension.Host.Handlers;
 using Bicep.Local.Extension.Types.Attributes;
 using Azure.Bicep.Types.Concrete;
 using System.Net.Http;
-using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder();
 
@@ -101,9 +100,6 @@ public class GreetingHandler : TypedResourceHandler<Greeting, GreetingIdentifier
 
 // ============ HttpCall Resource ============
 
-[JsonConverter(typeof(JsonStringEnumConverter))]
-public enum HttpMethod { GET, POST, PUT, DELETE, PATCH }
-
 public class HttpHeader
 {
     [TypeProperty("Header name", ObjectTypePropertyFlags.Required)]
@@ -125,9 +121,8 @@ public class HttpCall : HttpCallIdentifiers
     [TypeProperty("The URL to call", ObjectTypePropertyFlags.Required)]
     public required string Url { get; set; }
 
-    [TypeProperty("The HTTP method", ObjectTypePropertyFlags.Required)]
-    [JsonConverter(typeof(JsonStringEnumConverter))]
-    public HttpMethod Method { get; set; }
+    [TypeProperty("The HTTP method (GET, POST, PUT, DELETE, PATCH)", ObjectTypePropertyFlags.Required)]
+    public required string Method { get; set; }
 
     [TypeProperty("The request body")]
     public string? Body { get; set; }
@@ -155,13 +150,13 @@ public class HttpCallHandler : TypedResourceHandler<HttpCall, HttpCallIdentifier
     {
         using var client = new HttpClient();
 
-        var method = request.Properties.Method switch
+        var method = request.Properties.Method.ToUpperInvariant() switch
         {
-            HttpMethod.GET => System.Net.Http.HttpMethod.Get,
-            HttpMethod.POST => System.Net.Http.HttpMethod.Post,
-            HttpMethod.PUT => System.Net.Http.HttpMethod.Put,
-            HttpMethod.DELETE => System.Net.Http.HttpMethod.Delete,
-            HttpMethod.PATCH => System.Net.Http.HttpMethod.Patch,
+            "GET" => System.Net.Http.HttpMethod.Get,
+            "POST" => System.Net.Http.HttpMethod.Post,
+            "PUT" => System.Net.Http.HttpMethod.Put,
+            "DELETE" => System.Net.Http.HttpMethod.Delete,
+            "PATCH" => System.Net.Http.HttpMethod.Patch,
             _ => throw new InvalidOperationException($"Unsupported method: {request.Properties.Method}")
         };
 
