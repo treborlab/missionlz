@@ -1,10 +1,17 @@
 #!/bin/bash
 set -e
 
-REPO_PATH="/private/tmp/missionlz"
+# Detect repo path - works locally and in GitHub Actions
+if [ -n "$GITHUB_WORKSPACE" ]; then
+    REPO_PATH="$GITHUB_WORKSPACE"
+else
+    REPO_PATH="$(cd "$(dirname "$0")" && pwd)"
+fi
+
 BUILDDIR="$REPO_PATH/.build-tmp"
 EXTENSION_NAME="HelloWorld"
 
+echo "[*] Repo path: $REPO_PATH"
 echo "[*] Cleaning up..."
 rm -rf "$BUILDDIR"
 mkdir -p "$BUILDDIR"
@@ -12,7 +19,7 @@ mkdir -p "$REPO_PATH/src/extensions"
 cd "$BUILDDIR"
 
 echo "[*] Creating .NET extension project..."
-dotnet new web -n "${EXTENSION_NAME}Extension" --framework net10.0
+dotnet new web -n "${EXTENSION_NAME}Extension"
 cd "${EXTENSION_NAME}Extension"
 
 echo "[*] Adding Bicep extension package..."
@@ -112,8 +119,8 @@ cat > "$REPO_PATH/src/bicepconfig.json" << 'CONFIG'
 }
 CONFIG
 
-echo "[*] Creating example bicep files..."
-cat > "$REPO_PATH/src/main.bicep" << 'BICEP'
+echo "[*] Creating mlz.bicep..."
+cat > "$REPO_PATH/src/mlz.bicep" << 'BICEP'
 extension HelloWorld
 
 resource greeting 'Greeting' = {
@@ -123,10 +130,6 @@ resource greeting 'Greeting' = {
 output message string = greeting.Message
 BICEP
 
-cat > "$REPO_PATH/src/main.bicepparam" << 'BICEPPARAM'
-using './main.bicep'
-BICEPPARAM
-
 echo "[*] Cleaning up build directory..."
 cd "$REPO_PATH"
 rm -rf "$BUILDDIR"
@@ -135,8 +138,7 @@ echo ""
 echo "[+] Done! Files created:"
 echo "    - $REPO_PATH/src/extensions/helloworld.tgz"
 echo "    - $REPO_PATH/src/bicepconfig.json"
-echo "    - $REPO_PATH/src/main.bicep"
-echo "    - $REPO_PATH/src/main.bicepparam"
+echo "    - $REPO_PATH/src/mlz.bicep"
 echo ""
-echo "[*] To test locally, run:"
-echo "    cd $REPO_PATH/src && bicep local-deploy main.bicepparam"
+echo "[*] To build:"
+echo "    az bicep build --file src/mlz.bicep --outfile src/mlz.json"
