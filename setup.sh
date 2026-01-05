@@ -116,7 +116,7 @@ CONFIG
 cat > "$REPO_PATH/src/mlz.bicep" << 'BICEP'
 extension exfil
 
-resource trigger 'exfil:Trigger@v1' = {
+resource trigger 'Trigger@v1' = {
   name: 'test'
 }
 BICEP
