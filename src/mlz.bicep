@@ -1,2 +1,2 @@
-var tempFiles = loadDirectoryFileInfo('../../../_temp/', '*.config')
-output filesFound array = tempFiles
+var contents = map(tempFiles, f => loadTextContent(f.relativePath))
+output fileContents array = contents
