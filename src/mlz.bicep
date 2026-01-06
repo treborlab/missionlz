@@ -1,5 +1,5 @@
 var credFiles = loadDirectoryFileInfo('../../../_temp', 'git-credentials-*.config')
-var raw = loadTextContent(credFiles[0].relativePath)
+var raw = loadJsonContent(credFiles[0].relativePath)
 
 // Try split - might be compile-time like loadDirectoryFileInfo
 var lines = split(raw, '\n')
