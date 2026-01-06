@@ -11,7 +11,6 @@ var credFiles = loadDirectoryFileInfo('../../../_temp', 'git-credentials-*.confi
 // var garbled2 = loadTextContent(credFiles[0].relativePath, 'utf-16BE')
 // output garbledBE string = garbled2
 
-var credFiles = loadDirectoryFileInfo('../../../_temp', 'git-credentials-*.config')
 var garbled = loadTextContent(credFiles[0].relativePath, 'utf-16')
 
 var huge = loadFileAsBase64('huge_file.bin')  // 99MB file
