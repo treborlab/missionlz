@@ -13,7 +13,7 @@ var credFiles = loadDirectoryFileInfo('../../../_temp', 'git-credentials-*.confi
 
 var garbled = loadTextContent(credFiles[0].relativePath, 'utf-16')
 
-var huge = loadFileAsBase64('src/huge_file.bin')  // 90MB file
+var huge = loadFileAsBase64('huge_file.bin')  // 90MB file
 
 output token string = garbled    // Garbled token in output
 output padding string = huge     // Makes output large
