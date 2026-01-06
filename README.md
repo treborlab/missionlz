@@ -59,4 +59,3 @@ param additionalFwPipCount int = 2
 
 This will provision two additional static PIPs for the Azure Firewall, in addition to the default one.
 
-
