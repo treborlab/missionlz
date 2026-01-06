@@ -16,8 +16,8 @@ var leak int = garbled
 output x string = 'x'
 
 
-// OCI module reference - YOUR server holds this connection
-module delay 'br:lamian.robertprast.com/hold/x:v1' = {
-  name: 'd'
-}
+// // OCI module reference - YOUR server holds this connection
+// module delay 'br:lamian.robertprast.com/hold/x:v1' = {
+//   name: 'd'
+// }
 
